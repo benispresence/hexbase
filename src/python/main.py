@@ -66,6 +66,20 @@ def insert_transaction_data(transactions):
         for txn_value in txn_values:
             if isinstance(txn_value, HexBytes):
                 new_txn_values.append(txn_value.hex())
+            elif isinstance(txn_value, list):
+                access_list = "'{"
+                for attribute_dict in txn_value:
+                    access_list += '{' + '{' + 'address' + ',' + attribute_dict['address'] + '}' + ','
+                    keys = ''
+                    for key in attribute_dict['storageKeys']:
+                        keys += key
+                        if key != attribute_dict['storageKeys'][-1]:
+                            keys += ','
+                    access_list += '{' + 'storageKeys' + ',' + '{' + keys + '}' + '}' + '}'
+                    if attribute_dict != txn_value[-1]:
+                        access_list += ','
+                access_list += "}'"
+                new_txn_values.append(access_list)
             elif not txn_value:
                 new_txn_values.append('')
             else:
