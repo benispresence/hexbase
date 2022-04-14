@@ -62,11 +62,13 @@ def insert_transaction_data(transactions):
         txn_all_columns = txn_all_columns.replace("from", "from_address")
         txn_all_columns = txn_all_columns.replace('to', 'to_address')
         new_txn_values = []
+        is_access_list_txn = False
 
         for txn_value in txn_values:
             if isinstance(txn_value, HexBytes):
                 new_txn_values.append(txn_value.hex())
             elif isinstance(txn_value, list):
+                is_access_list_txn = True
                 access_list = '{'
                 for attribute_dict in txn_value:
                     access_list += '{' + '{"' + 'address' + '","' + attribute_dict['address'] + '"}' + ','
@@ -84,7 +86,10 @@ def insert_transaction_data(transactions):
                 new_txn_values.append('')
             else:
                 new_txn_values.append(txn_value)
-        transactions_list.append(new_txn_values[5])
+        if is_access_list_txn:
+            transactions_list.append(new_txn_values[7])
+        else:
+            transactions_list.append(new_txn_values[5])
 
         insert_into_pg('transactions', txn_all_columns, new_txn_values)
 
