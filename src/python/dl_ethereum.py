@@ -1,5 +1,7 @@
-from config import get_pg_conn, get_infura_conn
 from hexbytes import HexBytes
+
+from python.configs.config import get_pg_conn, get_infura_conn
+from utils import get_last_block_number_from_b_dwh
 
 pg_conn = get_pg_conn()
 web3 = get_infura_conn()
@@ -107,20 +109,8 @@ def insert_into_pg(table, columns, values):
             curs.execute(insert_txn_statement)
 
 
-def retrieve_last_block_num():
-    # SQL
-    last_block_query = f'SELECT max(number :: INT) FROM dl_ethereum.blocks;'
-
-    with pg_conn:
-        with pg_conn.cursor() as curs:
-            curs.execute(last_block_query)
-            block_num = curs.fetchall()
-    return block_num[0][0]
-
-
 if __name__ == '__main__':
-    # Retrieve last block number in the BDWH Blockchain Data Warehouse
-    start_block_num = retrieve_last_block_num()
+    start_block_num = get_last_block_number_from_b_dwh('dl_ethereum', 'blocks', 'number')
     if start_block_num is None:
         start_block_num = 0
     else:
