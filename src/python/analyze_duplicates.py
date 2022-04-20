@@ -1,4 +1,4 @@
-from python.configs.config import get_pg_conn
+from configs.config import get_pg_conn
 
 pg_conn = get_pg_conn()
 

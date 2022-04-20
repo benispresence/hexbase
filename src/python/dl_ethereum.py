@@ -1,6 +1,6 @@
 from hexbytes import HexBytes
 
-from python.configs.config import get_pg_conn, get_infura_conn
+from configs.config import get_pg_conn, get_infura_conn
 from utils import get_last_block_number_from_b_dwh
 
 pg_conn = get_pg_conn()
