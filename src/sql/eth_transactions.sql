@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS eth.transactions AS (
            CASE WHEN value = '' THEN 0 ELSE value:: NUMERIC/1000000000000000000 END AS value_eth
            -- r, s, v did not include these
     FROM dl_ethereum.transactions d
+    WHERE to_address = '0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39'
 );
 
 

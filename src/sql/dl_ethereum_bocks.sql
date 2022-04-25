@@ -27,5 +27,5 @@ CREATE TABLE IF NOT EXISTS dl_ethereum.blocks(
 
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA dl_ethereum TO dl_loader;
 
-
-
+/* PRIMARY KEY */
+ALTER TABLE dl_ethereum.blocks ADD PRIMARY KEY (number);

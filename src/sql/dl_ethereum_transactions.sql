@@ -20,8 +20,7 @@ CREATE TABLE IF NOT EXISTS dl_ethereum.transactions(
 );
 
 /* INDEXES */
-CREATE INDEX transaction_hash_ndx ON dl_ethereum.transactions(hash);
-CREATE INDEX to_address_ndx ON dl_ethereum.transactions(to_address);
+CREATE INDEX CONCURRENTLY to_address_and_block_number_ndx ON dl_ethereum.transactions(to_address, blocknumber);
 
 /* PERMISSIONS */
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA dl_ethereum TO dl_loader;
@@ -33,5 +32,5 @@ ADD COLUMN accessList TEXT ARRAY;
 ALTER TABLE dl_ethereum.transactions
 ADD COLUMN chainId TEXT;
 
-
-
+/* PRIMARY KEY */
+ALTER TABLE dl_ethereum.transactions ADD PRIMARY KEY (hash);
