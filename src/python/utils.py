@@ -18,3 +18,20 @@ def get_last_block_number_from_b_dwh(schema, table, column):
             block_num = curs.fetchall()
 
     return block_num[0][0]
+
+
+def insert_into_pg(schema, table, columns, values):
+    """
+    :param schema: schema name (str)
+    :param table: table name (str)
+    :param columns: column list
+    :param values: value list
+    :return:
+    """
+    # SQL
+    insert_txn_statement = f'insert into {schema}.{table} ({columns}) values {tuple(values)};'
+
+    # INSERT TO POSTGRES
+    with pg_conn:
+        with pg_conn.cursor() as curs:
+            curs.execute(insert_txn_statement)
