@@ -3,7 +3,7 @@ import psycopg2
 
 from web3 import Web3
 
-PATH_CONFIG = '/home/ubuntu/global_config.ini'
+PATH_CONFIG = '/Users/benjaminharmat/global_config.ini'
 
 config = configparser.ConfigParser()
 config.read(PATH_CONFIG)
@@ -23,4 +23,10 @@ def get_pg_conn():
 def get_infura_conn():
     infura_url = "https://mainnet.infura.io/v3/"+config['infura']['token']
     web3_conn = Web3(Web3.HTTPProvider(infura_url))
+    return web3_conn
+
+
+def get_local_node_conn():
+    local_node_url = "http://localhost:8545"
+    web3_conn = Web3(Web3.HTTPProvider(local_node_url))
     return web3_conn

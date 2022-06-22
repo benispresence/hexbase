@@ -91,9 +91,15 @@ def decode_tx(address, input_data, abi):
 
 def get_function_arguments(abi, contract_address, contract_input):
     function_details = decode_tx(contract_address, contract_input, abi)
-    function_called = function_details[0]
-    arguments = json.dumps(json.loads(function_details[1]), indent=2)
-    return function_called, arguments
+    try:
+        function = function_details[0]
+        args = json.dumps(json.loads(function_details[1]), indent=2)
+    except json.decoder.JSONDecodeError as error:
+        function = 'Null'
+        args = 'Null'
+        print(f'json.decoder.JSONDecodeError: {error}')
+        print('Transaction Input was replaced with the string value "Null".')
+    return function, args
 
 
 if __name__ == '__main__':
