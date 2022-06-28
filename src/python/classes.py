@@ -11,6 +11,17 @@ class SmartContract:
         self.abi = abi
         self.deployed_block_height = deployed_block_height
         self.web3_contract_interface = web3.eth.contract(address=address, abi=abi)
+        if self.name == 'pulsedogecoin':
+            self.transfer = dict(event_name='Transfer',
+                                 event_class=self.web3_contract_interface.events.Transfer,
+                                 event_object=self.web3_contract_interface.events.Transfer())
+            self.approval = dict(event_name='Approval',
+                                 event_class=self.web3_contract_interface.events.Approval,
+                                 event_object=self.web3_contract_interface.events.Approval())
+            self.claim = dict(event_name='Claim',
+                              event_class=self.web3_contract_interface.events.Claim,
+                              event_object=self.web3_contract_interface.events.Claim())
+            self.events = [self.transfer, self.approval, self.claim]
 
 
 class Block:
@@ -122,3 +133,13 @@ class Event:
         self.address = event_dict['address']
         self.block_hash = event_dict['blockHash']
         self.block_number = event_dict['blockNumber']
+
+    def __str__(self):
+        return f'Address: {self.address} \n' \
+               f'Block Number: {self.block_number} \n' \
+               f'Block Hash: {self.block_hash.hex()} \n' \
+               f'Args: {self.args} \n' \
+               f'Log Index: {self.log_index} \n' \
+               f'Event: {self.event} \n' \
+               f'Transaction Hash: {self.transaction_hash.hex()} \n' \
+               f'Transaction Index: {self.transaction_index}'

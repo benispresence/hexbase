@@ -1,11 +1,10 @@
-from configs.config import get_infura_conn, get_pg_conn
+from configs.config import get_infura_conn, get_pg_conn, get_local_node_conn
 from configs.smart_contract_configs import all_contract_configs
 from classes import SmartContract, Block, Transaction
-from utils import has_schema, has_table, create_table, create_schema, \
-    get_start_block, insert_into_pg, begin_db_transaction, commit_db_transaction
+from utils import get_start_block, insert_into_pg, begin_db_transaction, commit_db_transaction, check_db_table
 
 pg_conn = get_pg_conn()
-web3 = get_infura_conn()
+web3 = get_local_node_conn()
 
 
 def update_txn_table(cursor, block, transaction, smart_contract):
@@ -34,12 +33,12 @@ def update_txn_table(cursor, block, transaction, smart_contract):
     print(f'Transaction {transaction.txn_hash.hex()} was processed')
 
 
-def update_tables(config):
+def update_tables(configuration):
 
-    smart_contract = SmartContract(config['name'], config['address'],
-                                   config['abi'], config['deployed_block_height'])
-    start_block_num = 1 + get_start_block(smart_contract)
-    current_block_num = web3.eth.block_number
+    smart_contract = SmartContract(configuration['name'], configuration['address'],
+                                   configuration['abi'], configuration['deployed_block_height'])
+    start_block_num = 1 + get_start_block(smart_contract, 'transactions')
+    current_block_num = 15036562  # todo: web3.eth.block_number
 
     print(f'Current Block {current_block_num}')
 
@@ -67,31 +66,8 @@ def update_tables(config):
         print(f'The block number {block_number} was processed')
 
 
-def process_smart_contract_data(config):
-    schema = config['name']
-
-    # SCHEMA
-    if not has_schema(schema):
-        create_schema(schema)
-        print(f'The Schema named {schema} was created, because it did not exist')
-
-    # TABLES
-    if not has_table('transactions', schema):
-        create_table(schema, 'transactions')
-        print(f'The Table named {schema}.transactions was created, because it did not exist')
-
-    if not has_table('logs', schema):
-        create_table(schema, 'logs')
-        print(f'The Table named {schema}.logs was created, because it did not exist')
-
-    if not has_table('events', schema):
-        create_table(schema, 'events')
-        print(f'The Table named {schema}.events was created, because it did not exist')
-
-    update_tables(config)
-
-
 if __name__ == '__main__':
     for config in all_contract_configs:
         print(config['name'])
-        process_smart_contract_data(config)
+        check_db_table(schema=config['name'], table='transactions')
+        update_tables(config)
