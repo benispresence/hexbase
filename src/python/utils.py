@@ -3,8 +3,8 @@ from configs.config import get_pg_conn
 pg_conn = get_pg_conn()
 
 
-def get_transactions_from_b_dwh(schema):
-    get_transactions_sql_query = f'SELECT * FROM {schema}.transactions WHERE block_number :: INT > 14954138'
+def get_transactions_from_b_dwh(schema, block):
+    get_transactions_sql_query = f'SELECT * FROM {schema}.transactions WHERE block_number :: INT = {block}'
 
     with pg_conn:
         with pg_conn.cursor() as cursor:
@@ -14,31 +14,16 @@ def get_transactions_from_b_dwh(schema):
     return transactions
 
 
-def get_last_block_number_from_b_dwh(schema, table, column):
-    """
-    :param schema: B-DWH Schema name (str)
-    :param table: B-DWH table name (str)
-    :param column: B-DWH block_number column name (str)
-    :return: Returns the last block number from one of the tables from the (B-DWH) Blockchain Data Warehouse.
-    """
-    last_block_query = f'SELECT max({column} :: INT) FROM {schema}.{table};'
-
-    with pg_conn:
-        with pg_conn.cursor() as curs:
-            curs.execute(last_block_query)
-            block_num = curs.fetchall()
-
-    return block_num[0][0]
-
-
-def get_start_block(contract):
+def get_start_block(contract, table, event_type=None):
     """
     :return: Returns the last block number from one of the tables from the (B-DWH) Blockchain Data Warehouse.
     """
     column = 'block_number'
     schema = contract.name
-    table = 'transactions'
-    last_block_query = f'SELECT max({column} :: INT) FROM {schema}.{table};'
+    if event_type is not None:
+        last_block_query = f"SELECT max({column} :: INT) FROM {schema}.{table} WHERE event = '{event_type}';"
+    else:
+        last_block_query = f'SELECT max({column} :: INT) FROM {schema}.{table};'
 
     with pg_conn:
         with pg_conn.cursor() as curs:
@@ -133,7 +118,7 @@ def create_table(schema_name, table_name):
                            f'transaction_hash    TEXT,' \
                            f'transaction_index   TEXT' \
                            f');' \
-                           f'ALTER TABLE {schema_name}.logs ADD PRIMARY KEY (transaction_hash, transaction_index);'
+                           f'ALTER TABLE {schema_name}.logs ADD PRIMARY KEY (transaction_hash, log_index);'
     elif table_name == 'events':
         create_table_sql = f'CREATE TABLE IF NOT EXISTS {schema_name}.events(' \
                            f'args                TEXT,' \
@@ -145,7 +130,7 @@ def create_table(schema_name, table_name):
                            f'block_hash          TEXT,' \
                            f'block_number        TEXT' \
                            f');' \
-                           f'ALTER TABLE {schema_name}.events ADD PRIMARY KEY (transaction_hash, transaction_index);'
+                           f'ALTER TABLE {schema_name}.events ADD PRIMARY KEY (transaction_hash, log_index);'
     else:
         create_table_sql = f'CREATE TABLE IF NOT EXISTS {schema_name}.{table_name};'
 
@@ -153,6 +138,18 @@ def create_table(schema_name, table_name):
     with pg_conn:
         with pg_conn.cursor() as curs:
             curs.execute(create_table_sql)
+
+
+def check_db_table(schema, table):
+    # SCHEMA
+    if not has_schema(schema):
+        create_schema(schema)
+        print(f'The Schema named {schema} was created, because it did not exist')
+
+    # TABLE
+    if not has_table(table, schema):
+        create_table(schema, table)
+        print(f'The Table named {schema}.{table} was created, because it did not exist')
 
 
 def begin_db_transaction(cursor):
