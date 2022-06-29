@@ -1,63 +1,35 @@
 import json
 
-from hexbytes import HexBytes
-from Crypto.Hash import keccak
-
 from configs.config import get_infura_conn, get_pg_conn
 from configs.smart_contract_configs import pulsedogecoin_contract_dict
 from classes import SmartContract, Log, TransactionReceipt, Event
-from utils import get_transactions_from_b_dwh, \
-    begin_db_transaction, commit_db_transaction, insert_into_pg, get_start_block, check_db_table
+from utils import begin_db_transaction, commit_db_transaction, insert_into_pg, get_start_block, check_db_table
+
 
 pg_conn = get_pg_conn()
 web3 = get_infura_conn()
 
 
-def get_logs(txn_list):
+def get_logs(event_class, start_block, end_block):
     log_list = []
-    for txn in txn_list:
-        receipt = TransactionReceipt(web3.eth.get_transaction_receipt(HexBytes(txn)))
-        for log in receipt.logs:
-            log_list.append(Log(log))
+    web3_filter = event_class.createFilter(fromBlock=start_block, toBlock=end_block)
+    for log in web3_filter.get_all_entries():
+        receipt = TransactionReceipt(web3.eth.get_transaction_receipt(log['transactionHash']))
+        # txn_receipts have more information of the logs, which are necessary
+        for receipt_log in receipt.logs:
+            if log['logIndex'] == receipt_log['logIndex']:
+                log_list.append(Log(receipt_log))
     return log_list
 
 
-def get_events(configuration, log_list):
+def get_events(event_object, log_list):
     events_list = []
-    contract = web3.eth.contract(address=configuration['address'], abi=configuration['abi'])
     for log in log_list:
-        if configuration['name'] == 'pulsedogecoin':
-            events_list.append(get_pulsedogecoin_event(log, contract))
+        events_list.append(Event(event_object.processLog(log.log_dict)))
     return events_list
 
 
-def get_event_hash(bitstring):
-    keccak_hash = keccak.new(digest_bits=256)
-    keccak_hash.update(bitstring)
-    keccak_hash = f'0x{keccak_hash.hexdigest()}'
-    return keccak_hash
-
-
-def get_pulsedogecoin_event(log, contract):  # todo put this into its separate script and adding other smart contracts
-    log_event_hash = log.topics[0].hex()
-    contract.events.Approval().get_past_event()
-
-    if log_event_hash == get_event_hash(b'Approval(address,address,uint256)'):
-        event = Event(contract.events.Approval().processLog(log.log_dict))
-    elif log_event_hash == get_event_hash(b'Transfer(address,address,uint256)'):
-        event = Event(contract.events.Transfer().processLog(log.log_dict))
-    elif log_event_hash == get_event_hash(b'Claim(address,uint256)'):
-        event = Event(contract.events.Claim().processLog(log.log_dict))
-    else:
-        raise Exception(f'Event not found for transaction: {log.transaction_hash.hex()} '
-                        f'with index {log.transaction_index}')
-    return event
-
-
-def update_log_and_event_data(configuration, log_list, event_list):
-    smart_contract = SmartContract(configuration['name'], configuration['address'],
-                                   configuration['abi'], configuration['deployed_block_height'])
-
+def update_log_and_event_data(smart_contract, log_list, event_list):
     with pg_conn:
         with pg_conn.cursor() as cursor:
             begin_db_transaction(cursor=cursor)
@@ -90,8 +62,6 @@ def update_event_table(db_cursor, contract, event_list):
         print(f'Processing Transaction Event for {event.transaction_hash.hex()}'
               f' with log index {event.log_index}')
 
-        print(json.dumps(dict(event.args)))
-
         insert_into_pg(schema=contract.name,
                        table='events',
 
@@ -114,22 +84,22 @@ def process_transactions_data(configuration):
     check_db_table(schema=smart_contract.name, table='logs')
     check_db_table(schema=smart_contract.name, table='events')
 
-    start_block_num = 1 + get_start_block(smart_contract, 'logs')
-    current_block_num = get_start_block(smart_contract, 'transactions')
+    # EVENT TYPE
+    for event in smart_contract.events:
+        print(f'Processing Events of type {event["event_name"]}')
 
-    print(f'Current Block in Transactions Table is {current_block_num}')
+        start_block_num = 1 + get_start_block(contract=smart_contract, table='events', event_type=event['event_name'])
+        current_block_num = web3.eth.block_number
+        print(f'Current Block in Events Table is {current_block_num} for Event Type {event["event_name"]}')
 
-    # BLOCKS
-    for block_number in range(start_block_num, current_block_num):
-        # TRANSACTIONS
-        transactions_data = get_transactions_from_b_dwh(smart_contract.name, block_number)
-        transaction_hash_list = [txn[0] for txn in transactions_data]
+        # BLOCKS
+        for block_number in range(start_block_num, current_block_num):
+            # LOGS & EVENTS
+            logs = get_logs(event['event_class'], block_number, block_number)
+            events = get_events(event['event_object'], logs)
+            update_log_and_event_data(smart_contract, logs, events)
 
-        # LOGS & EVENTS
-        logs = get_logs(transaction_hash_list)
-        events = get_events(configuration, logs)
-
-        update_log_and_event_data(configuration, logs, events)
+            print(f'Block number {block_number} was processed')
 
 
 if __name__ == '__main__':
