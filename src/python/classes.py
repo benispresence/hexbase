@@ -11,6 +11,8 @@ class SmartContract:
         self.abi = abi
         self.deployed_block_height = deployed_block_height
         self.web3_contract_interface = web3.eth.contract(address=address, abi=abi)
+
+        # web3 event classes and objects
         if self.name == 'pulsedogecoin':
             self.transfer = dict(event_name='Transfer',
                                  event_class=self.web3_contract_interface.events.Transfer,
@@ -22,6 +24,116 @@ class SmartContract:
                               event_class=self.web3_contract_interface.events.Claim,
                               event_object=self.web3_contract_interface.events.Claim())
             self.events = [self.transfer, self.approval, self.claim]
+        elif self.name == 'hex':
+            self.transfer = dict(event_name='Transfer',
+                                 event_class=self.web3_contract_interface.events.Transfer,
+                                 event_object=self.web3_contract_interface.events.Transfer())
+            self.approval = dict(event_name='Approval',
+                                 event_class=self.web3_contract_interface.events.Approval,
+                                 event_object=self.web3_contract_interface.events.Approval())
+            self.x_f_lobby_enter = dict(event_name='XfLobbyEnter',
+                                        event_class=self.web3_contract_interface.events.XfLobbyEnter,
+                                        event_object=self.web3_contract_interface.events.XfLobbyEnter())
+            self.x_f_lobby_exit = dict(event_name='XfLobbyExit',
+                                       event_class=self.web3_contract_interface.events.XfLobbyExit,
+                                       event_object=self.web3_contract_interface.events.XfLobbyExit())
+            self.daily_data_update = dict(event_name='DailyDataUpdate',
+                                          event_class=self.web3_contract_interface.events.DailyDataUpdate,
+                                          event_object=self.web3_contract_interface.events.DailyDataUpdate())
+            self.claim = dict(event_name='Claim',
+                              event_class=self.web3_contract_interface.events.Claim,
+                              event_object=self.web3_contract_interface.events.Claim())
+            self.claim_assist = dict(event_name='ClaimAssist',
+                                     event_class=self.web3_contract_interface.events.ClaimAssist,
+                                     event_object=self.web3_contract_interface.events.ClaimAssist())
+            self.stake_start = dict(event_name='StakeStart',
+                                    event_class=self.web3_contract_interface.events.StakeStart,
+                                    event_object=self.web3_contract_interface.events.StakeStart())
+            self.stake_good_accounting = dict(event_name='StakeGoodAccounting',
+                                              event_class=self.web3_contract_interface.events.StakeGoodAccounting,
+                                              event_object=self.web3_contract_interface.events.StakeGoodAccounting())
+            self.stake_end = dict(event_name='StakeEnd',
+                                  event_class=self.web3_contract_interface.events.StakeEnd,
+                                  event_object=self.web3_contract_interface.events.StakeEnd())
+            self.share_rate_change = dict(event_name='ShareRateChange',
+                                          event_class=self.web3_contract_interface.events.ShareRateChange,
+                                          event_object=self.web3_contract_interface.events.ShareRateChange())
+            self.events = [self.transfer, self.approval, self.x_f_lobby_enter, self.x_f_lobby_exit,
+                           self.daily_data_update, self.claim, self.claim_assist, self.stake_start,
+                           self.stake_good_accounting, self.stake_end, self.share_rate_change]
+        elif self.name == 'hedron':
+            self.transfer = dict(event_name='Transfer',
+                                 event_class=self.web3_contract_interface.events.Transfer,
+                                 event_object=self.web3_contract_interface.events.Transfer())
+            self.approval = dict(event_name='Approval',
+                                 event_class=self.web3_contract_interface.events.Approval,
+                                 event_object=self.web3_contract_interface.events.Approval())
+            self.claim = dict(event_name='Claim',
+                              event_class=self.web3_contract_interface.events.Claim,
+                              event_object=self.web3_contract_interface.events.Claim())
+            self.loan_end = dict(event_name='LoanEnd',
+                                 event_class=self.web3_contract_interface.events.LoanEnd,
+                                 event_object=self.web3_contract_interface.events.LoanEnd())
+            self.loan_liquidate_bid = dict(event_name='LoanLiquidateBid',
+                                           event_class=self.web3_contract_interface.events.LoanLiquidateBid,
+                                           event_object=self.web3_contract_interface.events.LoanLiquidateBid())
+            self.loan_liquidate_exit = dict(event_name='LoanLiquidateExit',
+                                            event_class=self.web3_contract_interface.events.LoanLiquidateExit,
+                                            event_object=self.web3_contract_interface.events.LoanLiquidateExit())
+            self.loan_liquidate_start = dict(event_name='LoanLiquidateStart',
+                                             event_class=self.web3_contract_interface.events.LoanLiquidateStart,
+                                             event_object=self.web3_contract_interface.events.LoanLiquidateStart())
+            self.loan_payment = dict(event_name='LoanPayment',
+                                     event_class=self.web3_contract_interface.events.LoanPayment,
+                                     event_object=self.web3_contract_interface.events.LoanPayment())
+            self.loan_start = dict(event_name='LoanStart',
+                                   event_class=self.web3_contract_interface.events.LoanStart,
+                                   event_object=self.web3_contract_interface.events.LoanStart())
+            self.mint = dict(event_name='Mint',
+                             event_class=self.web3_contract_interface.events.Mint,
+                             event_object=self.web3_contract_interface.events.Mint())
+            self.events = [self.transfer, self.approval, self.claim,
+                           self.loan_end, self.loan_liquidate_bid, self.loan_liquidate_exit, self.loan_liquidate_start,
+                           self.loan_payment, self.loan_start, self.mint]
+        elif self.name == 'hex_stake_instance':
+            self.transfer = dict(event_name='Transfer',
+                                 event_class=self.web3_contract_interface.events.Transfer,
+                                 event_object=self.web3_contract_interface.events.Transfer())
+            self.approval = dict(event_name='Approval',
+                                 event_class=self.web3_contract_interface.events.Approval,
+                                 event_object=self.web3_contract_interface.events.Approval())
+            self.approval_for_all = dict(event_name='ApprovalForAll',
+                                         event_class=self.web3_contract_interface.events.ApprovalForAll,
+                                         event_object=self.web3_contract_interface.events.ApprovalForAll())
+            self.royalties_set = dict(event_name='RoyaltiesSet',
+                                      event_class=self.web3_contract_interface.events.RoyaltiesSet,
+                                      event_object=self.web3_contract_interface.events.RoyaltiesSet())
+            self.hsi_start = dict(event_name='HSIStart',
+                                  event_class=self.web3_contract_interface.events.HSIStart,
+                                  event_object=self.web3_contract_interface.events.HSIStart())
+            self.hsi_end = dict(event_name='HSIEnd',
+                                event_class=self.web3_contract_interface.events.HSIEnd,
+                                event_object=self.web3_contract_interface.events.HSIEnd())
+            self.hsi_transfer = dict(event_name='HSITransfer',
+                                     event_class=self.web3_contract_interface.events.HSITransfer,
+                                     event_object=self.web3_contract_interface.events.HSITransfer())
+            self.hsi_tokenize = dict(event_name='HSITokenize',
+                                     event_class=self.web3_contract_interface.events.HSITokenize,
+                                     event_object=self.web3_contract_interface.events.HSITokenize())
+            self.hsi_detokenize = dict(event_name='HSIDetokenize',
+                                       event_class=self.web3_contract_interface.events.HSIDetokenize,
+                                       event_object=self.web3_contract_interface.events.HSIDetokenize())
+            self.events = [self.transfer, self.approval, self.approval_for_all,
+                           self.royalties_set, self.hsi_start,
+                           self.hsi_end, self.hsi_transfer, self.hsi_tokenize, self.hsi_detokenize]
+        elif self.name == 'maximus':
+            self.transfer = dict(event_name='Transfer',
+                                 event_class=self.web3_contract_interface.events.Transfer,
+                                 event_object=self.web3_contract_interface.events.Transfer())
+            self.approval = dict(event_name='Approval',
+                                 event_class=self.web3_contract_interface.events.Approval,
+                                 event_object=self.web3_contract_interface.events.Approval())
+            self.events = [self.transfer, self.approval]
 
 
 class Block:

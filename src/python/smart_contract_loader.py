@@ -38,7 +38,7 @@ def update_tables(configuration):
     smart_contract = SmartContract(configuration['name'], configuration['address'],
                                    configuration['abi'], configuration['deployed_block_height'])
     start_block_num = 1 + get_start_block(smart_contract, 'transactions')
-    current_block_num = 15036562  # todo: web3.eth.block_number
+    current_block_num = 15069802  # todo: web3.eth.block_number
 
     print(f'Current Block {current_block_num}')
 
