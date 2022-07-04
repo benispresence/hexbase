@@ -1,7 +1,7 @@
 import json
 
 from configs.config import get_infura_conn, get_pg_conn
-from configs.smart_contract_configs import pulsedogecoin_contract_dict
+from configs.smart_contract_configs import hex_contract_dict
 from classes import SmartContract, Log, TransactionReceipt, Event
 from utils import begin_db_transaction, commit_db_transaction, insert_into_pg, get_start_block, check_db_table
 
@@ -81,6 +81,8 @@ def process_transactions_data(configuration):
     smart_contract = SmartContract(configuration['name'], configuration['address'],
                                    configuration['abi'], configuration['deployed_block_height'])
 
+    print(f'Smart Contract {configuration["name"]}')
+
     check_db_table(schema=smart_contract.name, table='logs')
     check_db_table(schema=smart_contract.name, table='events')
 
@@ -103,4 +105,4 @@ def process_transactions_data(configuration):
 
 
 if __name__ == '__main__':
-    process_transactions_data(pulsedogecoin_contract_dict)
+    process_transactions_data(hex_contract_dict)

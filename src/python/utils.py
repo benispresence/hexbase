@@ -3,8 +3,15 @@ from configs.config import get_pg_conn
 pg_conn = get_pg_conn()
 
 
-def get_transactions_from_b_dwh(schema, block):
-    get_transactions_sql_query = f'SELECT * FROM {schema}.transactions WHERE block_number :: INT = {block}'
+def get_indirect_transactions(schema):
+    get_transactions_sql_query = f'WITH base AS (' \
+                                 f'     SELECT transaction_hash FROM {schema}.events ' \
+                                 f'     EXCEPT ' \
+                                 f'     SELECT t.hash FROM {schema}.transactions t' \
+                                 f') ' \
+                                 f'SELECT * FROM base ' \
+                                 f'EXCEPT ' \
+                                 f'SELECT it.hash FROM {schema}.indirect_transactions it'
 
     with pg_conn:
         with pg_conn.cursor() as cursor:
@@ -106,6 +113,23 @@ def create_table(schema_name, table_name):
                             f'function_called             TEXT,' \
                             f'arguments                   TEXT' \
                             f');'
+    elif table_name == 'indirect_transactions':
+        create_table_sql = f'CREATE TABLE IF NOT EXISTS {schema_name}.indirect_transactions(' \
+                           f'hash                        TEXT PRIMARY KEY,' \
+                           f'block_number                TEXT,' \
+                           f'timestamp                   TEXT,' \
+                           f'block_gas_limit             TEXT,' \
+                           f'block_gas_used              TEXT,' \
+                           f'total_transactions_in_block TEXT,' \
+                           f'from_address                TEXT,' \
+                           f'to_address                  TEXT,' \
+                           f'gas                         TEXT,' \
+                           f'gas_price                   TEXT,' \
+                           f'nonce                       TEXT,' \
+                           f'transaction_index           TEXT,' \
+                           f'type                        TEXT,' \
+                           f'value                       TEXT' \
+                           f');'
     elif table_name == 'logs':
         create_table_sql = f'CREATE TABLE IF NOT EXISTS {schema_name}.logs(' \
                            f'address             TEXT,' \
