@@ -4,7 +4,7 @@ from web3.auto import w3
 from eth_utils import to_hex
 
 import json
-from python.configs.config import get_infura_conn
+from configs.config import get_infura_conn
 
 web3 = get_infura_conn()
 

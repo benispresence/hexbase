@@ -21,6 +21,25 @@ def get_indirect_transactions(schema):
     return transactions
 
 
+def get_missing_transaction_receipts(schema, indirect=False):
+    if indirect == True:
+        table = 'indirect_transactions'
+        comparison_table = 'indirect_transaction_receipts'
+    else:
+        table = 'transactions'
+        comparison_table = 'transaction_receipts'
+    get_transactions_sql_query = f'SELECT t.hash FROM {schema}.{table} t ' \
+                                 f'EXCEPT ' \
+                                 f'SELECT ct.transaction_hash FROM {schema}.{comparison_table} ct;'
+
+    with pg_conn:
+        with pg_conn.cursor() as cursor:
+            cursor.execute(get_transactions_sql_query)
+            transactions = cursor.fetchall()
+
+    return transactions
+
+
 def get_start_block(contract, table, event_type=None):
     """
     :return: Returns the last block number from one of the tables from the (B-DWH) Blockchain Data Warehouse.
@@ -129,6 +148,34 @@ def create_table(schema_name, table_name):
                            f'transaction_index           TEXT,' \
                            f'type                        TEXT,' \
                            f'value                       TEXT' \
+                           f');'
+    elif table_name == 'transaction_receipts':
+        create_table_sql = f'CREATE TABLE IF NOT EXISTS {schema_name}.transaction_receipts(' \
+                           f'transaction_hash            TEXT PRIMARY KEY,' \
+                           f'block_number                TEXT,' \
+                           f'block_hash                  TEXT,' \
+                           f'cumulative_gas_used         TEXT,' \
+                           f'effective_gas_price         TEXT,' \
+                           f'gas_used                    TEXT,' \
+                           f'from_address                TEXT,' \
+                           f'to_address                  TEXT,' \
+                           f'status                      TEXT,' \
+                           f'transaction_index           TEXT,' \
+                           f'type                        TEXT' \
+                           f');'
+    elif table_name == 'indirect_transaction_receipts':
+        create_table_sql = f'CREATE TABLE IF NOT EXISTS {schema_name}.indirect_transaction_receipts(' \
+                           f'transaction_hash            TEXT PRIMARY KEY,' \
+                           f'block_number                TEXT,' \
+                           f'block_hash                  TEXT,' \
+                           f'cumulative_gas_used         TEXT,' \
+                           f'effective_gas_price         TEXT,' \
+                           f'gas_used                    TEXT,' \
+                           f'from_address                TEXT,' \
+                           f'to_address                  TEXT,' \
+                           f'status                      TEXT,' \
+                           f'transaction_index           TEXT,' \
+                           f'type                        TEXT' \
                            f');'
     elif table_name == 'logs':
         create_table_sql = f'CREATE TABLE IF NOT EXISTS {schema_name}.logs(' \

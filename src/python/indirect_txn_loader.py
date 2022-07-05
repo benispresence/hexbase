@@ -1,5 +1,3 @@
-import json
-
 from configs.config import get_pg_conn, get_infura_conn
 from configs.smart_contract_configs import hex_contract_dict
 from classes import SmartContract, Transaction, Block
