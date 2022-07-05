@@ -4,7 +4,7 @@ from classes import SmartContract, Block, Transaction
 from utils import get_start_block, insert_into_pg, begin_db_transaction, commit_db_transaction, check_db_table
 
 pg_conn = get_pg_conn()
-web3 = get_local_node_conn()
+web3 = get_infura_conn()
 
 
 def update_txn_table(cursor, block, transaction, smart_contract):
@@ -38,7 +38,7 @@ def update_tables(configuration):
     smart_contract = SmartContract(configuration['name'], configuration['address'],
                                    configuration['abi'], configuration['deployed_block_height'])
     start_block_num = 1 + get_start_block(smart_contract, 'transactions')
-    current_block_num = 15069802  # todo: web3.eth.block_number
+    current_block_num = web3.eth.block_number  # todo: web3.eth.block_number
 
     print(f'Current Block {current_block_num}')
 
