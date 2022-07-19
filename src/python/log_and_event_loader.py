@@ -12,14 +12,24 @@ web3 = get_infura_conn()
 
 def get_logs(event_class, start_block, end_block):
     log_list = []
-    web3_filter = event_class.createFilter(fromBlock=start_block, toBlock=end_block)
-    for log in web3_filter.get_all_entries():
-        receipt = TransactionReceipt(web3.eth.get_transaction_receipt(log['transactionHash']))
-        # txn_receipts have more information of the logs, which are necessary
-        for receipt_log in receipt.logs:
-            if log['logIndex'] == receipt_log['logIndex']:
-                log_list.append(Log(receipt_log))
-    return log_list
+    attempts = 0
+    while attempts < 4:
+        try:
+            web3_filter = event_class.createFilter(fromBlock=start_block, toBlock=end_block)
+            print(f'Web3 Filter is: {web3_filter}')
+            log_entries = web3_filter.get_all_entries()
+            for log in log_entries:
+                receipt = TransactionReceipt(web3.eth.get_transaction_receipt(log['transactionHash']))
+                # txn_receipts have more information of the logs, which are necessary
+                for receipt_log in receipt.logs:
+                    if log['logIndex'] == receipt_log['logIndex']:
+                        log_list.append(Log(receipt_log))
+            return log_list
+        except ValueError as error:
+            print(error)
+            attempts += 1
+            print(f'Trying again to get log entries. Attempt No. : {attempts}')
+    raise Exception(f'Too many attempts to get log entries.')
 
 
 def get_events(event_object, log_list):
@@ -62,13 +72,18 @@ def update_event_table(db_cursor, contract, event_list):
         print(f'Processing Transaction Event for {event.transaction_hash.hex()}'
               f' with log index {event.log_index}')
 
+        event_args_dict = dict(event.args)
+        for key in event_args_dict:
+            if type(event_args_dict[key]) is bytes:
+                event_args_dict[key] = web3.toHex(event_args_dict[key])
+
         insert_into_pg(schema=contract.name,
                        table='events',
 
                        columns=f'args, event, log_index, transaction_index, transaction_hash, address, block_hash,'
                                f'block_number',
 
-                       values=(json.dumps(dict(event.args)), event.event, event.log_index, event.transaction_index,
+                       values=(json.dumps(event_args_dict), event.event, event.log_index, event.transaction_index,
                                event.transaction_hash.hex(), event.address, event.block_hash.hex(), event.block_number),
 
                        cursor=db_cursor)
