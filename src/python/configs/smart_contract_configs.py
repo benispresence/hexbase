@@ -174,7 +174,7 @@ hex_contract_dict = dict(
               '"name":"endDay","type":"uint256"}],"name":"xfLobbyRange","outputs":[{"internalType":"uint256[]",' \
               '"name":"list","type":"uint256[]"}],"payable":false,"stateMutability":"view","type":"function"}] ',
     address='0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39',
-    deployed_block_height=9041184  # todo change block_height
+    deployed_block_height=9041184
 )
 
 
@@ -705,5 +705,4 @@ uniswap_v3_positions_config = dict(
 )
 
 
-all_contract_configs = [hex_contract_dict, hedron_contract_dict, hex_stake_instance_dict, pulsedogecoin_contract_dict,
-                        maximus_contract_dict]
+all_contract_configs = [hex_contract_dict, hedron_contract_dict, hex_stake_instance_dict, maximus_contract_dict]
