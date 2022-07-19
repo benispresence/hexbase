@@ -58,8 +58,8 @@ class SmartContract:
             self.share_rate_change = dict(event_name='ShareRateChange',
                                           event_class=self.web3_contract_interface.events.ShareRateChange,
                                           event_object=self.web3_contract_interface.events.ShareRateChange())
-            self.events = [self.stake_end, self.stake_start, self.transfer, self.approval, self.x_f_lobby_enter,
-                           self.x_f_lobby_exit, self.daily_data_update, self.claim, self.claim_assist,
+            self.events = [self.claim, self.transfer, self.stake_end, self.stake_start, self.approval,
+                           self.x_f_lobby_enter, self.x_f_lobby_exit, self.daily_data_update,  self.claim_assist,
                            self.stake_good_accounting,  self.share_rate_change]
         elif self.name == 'hedron':
             self.transfer = dict(event_name='Transfer',
