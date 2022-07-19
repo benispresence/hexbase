@@ -202,6 +202,34 @@ def create_table(schema_name, table_name):
                            f'block_number        TEXT' \
                            f');' \
                            f'ALTER TABLE {schema_name}.events ADD PRIMARY KEY (transaction_hash, log_index);'
+    elif table_name == 'stake_starts':
+        create_table_sql = f'CREATE TABLE IF NOT EXISTS {schema_name}.stake_starts(' \
+                           f'log_index                  TEXT,' \
+                           f'transaction_hash           TEXT,' \
+                           f'staker_address             TEXT,' \
+                           f'stake_id                   TEXT,' \
+                           f'timestamp_stake_start      TEXT,' \
+                           f'staked_hearts              TEXT,' \
+                           f'stake_shares               TEXT,' \
+                           f'staked_days                TEXT,' \
+                           f'is_auto_stake              TEXT' \
+                           f');' \
+                           f'ALTER TABLE {schema_name}.stake_starts ADD PRIMARY KEY (transaction_hash, log_index);'
+    elif table_name == 'stake_ends':
+        create_table_sql = f'CREATE TABLE IF NOT EXISTS {schema_name}.stake_ends(' \
+                           f'log_index                  TEXT,' \
+                           f'transaction_hash           TEXT,' \
+                           f'staker_address             TEXT,' \
+                           f'stake_id                   TEXT,' \
+                           f'timestamp_stake_end        TEXT,' \
+                           f'staked_hearts              TEXT,' \
+                           f'stake_shares               TEXT,' \
+                           f'payout                     TEXT,' \
+                           f'penalty                    TEXT,' \
+                           f'served_days                TEXT,' \
+                           f'prev_unlocked              TEXT' \
+                           f');' \
+                           f'ALTER TABLE {schema_name}.stake_ends ADD PRIMARY KEY (transaction_hash, log_index);'
     else:
         create_table_sql = f'CREATE TABLE IF NOT EXISTS {schema_name}.{table_name};'
 
