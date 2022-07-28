@@ -1,5 +1,5 @@
-from python.configs.config import get_infura_conn, get_pg_conn
-from python.utils import check_db_table, insert_into_pg
+from configs.config import get_infura_conn, get_pg_conn
+from utils import check_db_table, insert_into_pg
 
 
 pg_conn = get_pg_conn()

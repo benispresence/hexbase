@@ -230,6 +230,100 @@ def create_table(schema_name, table_name):
                            f'prev_unlocked              TEXT' \
                            f');' \
                            f'ALTER TABLE {schema_name}.stake_ends ADD PRIMARY KEY (transaction_hash, log_index);'
+    elif table_name == 'claims':
+        create_table_sql = f'CREATE TABLE IF NOT EXISTS {schema_name}.claims(' \
+                           f'log_index                  TEXT,' \
+                           f'transaction_hash           TEXT,' \
+                           f'btc_address                TEXT,' \
+                           f'claim_to_address           TEXT,' \
+                           f'referrer_address           TEXT,' \
+                           f'created_at                 TEXT,' \
+                           f'raw_satoshis               TEXT,' \
+                           f'adjusted_satoshis          TEXT,' \
+                           f'claim_flags                TEXT,' \
+                           f'claimed_hearts             TEXT,' \
+                           f'sender_address             TEXT' \
+                           f');' \
+                           f'ALTER TABLE {schema_name}.claims ADD PRIMARY KEY (transaction_hash, log_index);'
+    elif table_name == 'transfers':
+        create_table_sql = f'CREATE TABLE IF NOT EXISTS {schema_name}.transfers(' \
+                           f'log_index                  TEXT,' \
+                           f'transaction_hash           TEXT,' \
+                           f'from_address               TEXT,' \
+                           f'to_address                 TEXT,' \
+                           f'transfer_value              TEXT' \
+                           f');' \
+                           f'ALTER TABLE {schema_name}.transfers ADD PRIMARY KEY (transaction_hash, log_index);'
+    elif table_name == 'share_rate_changes':
+        create_table_sql = f'CREATE TABLE IF NOT EXISTS {schema_name}.share_rate_changes(' \
+                           f'log_index                  TEXT,' \
+                           f'transaction_hash           TEXT,' \
+                           f'stake_id                   TEXT,' \
+                           f'created_at                 TEXT,' \
+                           f'share_rate                 TEXT' \
+                           f');' \
+                           f'ALTER TABLE {schema_name}.share_rate_changes ADD PRIMARY KEY (transaction_hash, log_index);'
+    elif table_name == 'stake_good_accountings':
+        create_table_sql = f'CREATE TABLE IF NOT EXISTS {schema_name}.stake_good_accountings(' \
+                           f'log_index                  TEXT,' \
+                           f'transaction_hash           TEXT,' \
+                           f'staker_address             TEXT,' \
+                           f'stake_id                   TEXT,' \
+                           f'sender_address             TEXT,' \
+                           f'created_at                 TEXT,' \
+                           f'staked_hearts              TEXT,' \
+                           f'stake_shares               TEXT,' \
+                           f'payout                     TEXT,' \
+                           f'penalty                    TEXT' \
+                           f');' \
+                           f'ALTER TABLE {schema_name}.stake_good_accountings ' \
+                           f'ADD PRIMARY KEY (transaction_hash, log_index);'
+    elif table_name == 'daily_data_updates':
+        create_table_sql = f'CREATE TABLE IF NOT EXISTS {schema_name}.daily_data_updates(' \
+                           f'log_index                  TEXT,' \
+                           f'transaction_hash           TEXT,' \
+                           f'staker_address             TEXT,' \
+                           f'created_at                 TEXT,' \
+                           f'begin_day                  TEXT,' \
+                           f'end_day                    TEXT,' \
+                           f'is_auto_update             TEXT' \
+                           f');' \
+                           f'ALTER TABLE {schema_name}.daily_data_updates ' \
+                           f'ADD PRIMARY KEY (transaction_hash, log_index);'
+    elif table_name == 'xf_lobby_exits':
+        create_table_sql = f'CREATE TABLE IF NOT EXISTS {schema_name}.xf_lobby_exits(' \
+                           f'log_index                  TEXT,' \
+                           f'transaction_hash           TEXT,' \
+                           f'member_address             TEXT,' \
+                           f'entry_id                   TEXT,' \
+                           f'referrer_address           TEXT,' \
+                           f'created_at                 TEXT,' \
+                           f'xf_amount                  TEXT' \
+                           f');' \
+                           f'ALTER TABLE {schema_name}.xf_lobby_exits ' \
+                           f'ADD PRIMARY KEY (transaction_hash, log_index);'
+    elif table_name == 'xf_lobby_enters':
+        create_table_sql = f'CREATE TABLE IF NOT EXISTS {schema_name}.xf_lobby_enters(' \
+                           f'log_index                  TEXT,' \
+                           f'transaction_hash           TEXT,' \
+                           f'member_address             TEXT,' \
+                           f'entry_id                   TEXT,' \
+                           f'referrer_address           TEXT,' \
+                           f'created_at                 TEXT,' \
+                           f'raw_amount                 TEXT' \
+                           f');' \
+                           f'ALTER TABLE {schema_name}.xf_lobby_enters ' \
+                           f'ADD PRIMARY KEY (transaction_hash, log_index);'
+    elif table_name == 'approvals':
+        create_table_sql = f'CREATE TABLE IF NOT EXISTS {schema_name}.approvals(' \
+                           f'log_index                  TEXT,' \
+                           f'transaction_hash           TEXT,' \
+                           f'owner_address              TEXT,' \
+                           f'spender_address            TEXT,' \
+                           f'approval_value             TEXT' \
+                           f');' \
+                           f'ALTER TABLE {schema_name}.approvals ' \
+                           f'ADD PRIMARY KEY (transaction_hash, log_index);'
     else:
         create_table_sql = f'CREATE TABLE IF NOT EXISTS {schema_name}.{table_name};'
 
