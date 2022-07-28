@@ -705,4 +705,4 @@ uniswap_v3_positions_config = dict(
 )
 
 
-all_contract_configs = [hex_contract_dict, hedron_contract_dict, hex_stake_instance_dict, maximus_contract_dict]
+all_contract_configs = [hex_contract_dict]
