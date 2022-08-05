@@ -278,7 +278,7 @@ def create_table(schema_name, table_name):
                            f');' \
                            f'ALTER TABLE {schema_name}.stake_good_accountings ' \
                            f'ADD PRIMARY KEY (transaction_hash, log_index);'
-    elif table_name == 'daily_data_updates':
+    elif table_name == 'daily_data_updates' and schema_name == 'hex_events':
         create_table_sql = f'CREATE TABLE IF NOT EXISTS {schema_name}.daily_data_updates(' \
                            f'log_index                  TEXT,' \
                            f'transaction_hash           TEXT,' \
@@ -323,6 +323,70 @@ def create_table(schema_name, table_name):
                            f'approval_value             TEXT' \
                            f');' \
                            f'ALTER TABLE {schema_name}.approvals ' \
+                           f'ADD PRIMARY KEY (transaction_hash, log_index);'
+    elif table_name == 'daily_data_updates' and schema_name == 'dl_subgraph_hex':
+        create_table_sql = f'CREATE TABLE IF NOT EXISTS {schema_name}.daily_data_updates(' \
+                           f'end_day                    TEXT,' \
+                           f'payout_per_t_share         TEXT,' \
+                           f'payout                     TEXT,' \
+                           f'shares                     TEXT' \
+                           f');' \
+                           f'ALTER TABLE {schema_name}.daily_data_updates ' \
+                           f'ADD PRIMARY KEY (end_day);'
+    elif table_name == 'global_info' and schema_name == 'dl_subgraph_hex':
+        create_table_sql = f'CREATE TABLE IF NOT EXISTS {schema_name}.global_info(' \
+                           f'transaction_hash                    TEXT,' \
+                           f'hex_day                             TEXT,' \
+                           f'block_number                        TEXT,' \
+                           f'timestamp_block                     TEXT,' \
+                           f'total_supply                        TEXT,' \
+                           f'total_minted_hearts                 TEXT,' \
+                           f'total_hearts_in_circulation         TEXT,' \
+                           f'share_rate                          TEXT,' \
+                           f'stake_shares_total                  TEXT,' \
+                           f'stake_penalty_total                 TEXT,' \
+                           f'latest_stake_id                     TEXT,' \
+                           f'allocated_supply                    TEXT,' \
+                           f'next_stake_shares_total             TEXT,' \
+                           f'locked_hearts_total                 TEXT' \
+                           f');' \
+                           f'ALTER TABLE {schema_name}.global_info ' \
+                           f'ADD PRIMARY KEY (block_number);'
+    elif table_name == 'uniswap_v3' and schema_name == 'dl_subgraph_hex':
+        create_table_sql = f'CREATE TABLE IF NOT EXISTS {schema_name}.uniswap_v3(' \
+                           f'transaction_hash                    TEXT,' \
+                           f'block_number                        TEXT,' \
+                           f'created_at                          TEXT,' \
+                           f'sender                              TEXT,' \
+                           f'recipient                           TEXT,' \
+                           f'token_0_id                          TEXT,' \
+                           f'token_0_symbol                      TEXT,' \
+                           f'token_0_amount                      TEXT,' \
+                           f'token_1_id                          TEXT,' \
+                           f'token_1_symbol                      TEXT,' \
+                           f'token_1_amount                      TEXT,' \
+                           f'log_index                           TEXT' \
+                           f');' \
+                           f'ALTER TABLE {schema_name}.uniswap_v3 ' \
+                           f'ADD PRIMARY KEY (transaction_hash, log_index);'
+    elif table_name == 'uniswap_v2' and schema_name == 'dl_subgraph_hex':
+        create_table_sql = f'CREATE TABLE IF NOT EXISTS {schema_name}.uniswap_v2(' \
+                           f'transaction_hash                    TEXT,' \
+                           f'block_number                        TEXT,' \
+                           f'created_at                          TEXT,' \
+                           f'sender                              TEXT,' \
+                           f'recipient                           TEXT,' \
+                           f'token_0_id                          TEXT,' \
+                           f'token_0_symbol                      TEXT,' \
+                           f'token_0_amount_in                   TEXT,' \
+                           f'token_0_amount_out                  TEXT,' \
+                           f'token_1_id                          TEXT,' \
+                           f'token_1_symbol                      TEXT,' \
+                           f'token_1_amount_in                   TEXT,' \
+                           f'token_1_amount_out                  TEXT,' \
+                           f'log_index                           TEXT' \
+                           f');' \
+                           f'ALTER TABLE {schema_name}.uniswap_v2 ' \
                            f'ADD PRIMARY KEY (transaction_hash, log_index);'
     else:
         create_table_sql = f'CREATE TABLE IF NOT EXISTS {schema_name}.{table_name};'
