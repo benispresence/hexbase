@@ -16,7 +16,6 @@ def get_logs(event_class, start_block, end_block):
     while attempts < 4:
         try:
             web3_filter = event_class.createFilter(fromBlock=start_block, toBlock=end_block)
-            print(f'Web3 Filter is: {web3_filter}')
             log_entries = web3_filter.get_all_entries()
             for log in log_entries:
                 receipt = TransactionReceipt(web3.eth.get_transaction_receipt(log['transactionHash']))
