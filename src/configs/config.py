@@ -11,7 +11,7 @@ config.read(PATH_CONFIG)
 
 def get_pg_conn():
     pg_conn = psycopg2.connect(
-        dbname=config['postgre_db']['dbname']
+        dbname=config['postgre_db']['dbname_hexbase_v2']
         , user=config['postgre_db']['user']
         , password=config['postgre_db']['password']
         , host=config['postgre_db']['host']
@@ -21,7 +21,7 @@ def get_pg_conn():
 
 
 def get_infura_conn():
-    infura_url = "https://mainnet.infura.io/v3/"+config['infura3']['token']
+    infura_url = "https://mainnet.infura.io/v3/"+config['infura2']['token']
     web3_conn = Web3(Web3.HTTPProvider(infura_url))
     return web3_conn
 
