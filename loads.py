@@ -307,9 +307,8 @@ def load_stakes(database_cursor, event_dict):
     print('Stakes processed')
 
 
-def load_daily_data_updates(database_cursor, event_dict, gql_dict):
+def load_daily_data_updates(database_cursor, event_dict):
     event_updates = event_dict['DailyDataUpdate']
-    gql_updates = gql_dict['DailyDataUpdate']
     for dict_id in event_updates:
         # DATA0
         data0 = str(event_updates[dict_id].args['data0']).strip()
@@ -326,81 +325,6 @@ def load_daily_data_updates(database_cursor, event_dict, gql_dict):
                                'shares',
                        values=(begin_day,
                                end_day,
-                               event_updates[dict_id].transaction_hash.hex(),
-                               gql_updates['dailyDataUpdates'][0]['payoutPerTShare'],
-                               float(gql_updates['dailyDataUpdates'][0]['payout'])/100000000,
-                               float(gql_updates['dailyDataUpdates'][0]['shares'])/1000000000000),
+                               event_updates[dict_id].transaction_hash.hex()),
                        database_cursor=database_cursor)
     print('Daily Data Updates processed')
-
-
-def load_global_variables(database_cursor, gql_dict):
-    gql_updates = gql_dict['GlobalInfo']
-    if len(gql_updates['globalInfos']) > 0:
-        insert_into_pg(schema='hex',
-                       table='global_variables',
-                       columns='block_number,'
-                               'total_supply,'
-                               'circulating_supply,'
-                               'allocated_supply,'
-                               'locked_supply,'
-                               'total_minted,'
-                               't_share_rate,'
-                               'total_t_shares_staked',
-                       values=(gql_updates['globalInfos'][0]['blocknumber'],
-                               float(gql_updates['globalInfos'][0]['totalSupply']) / 100000000,
-                               float(gql_updates['globalInfos'][0]['totalHeartsinCirculation']) / 100000000,
-                               float(gql_updates['globalInfos'][0]['allocatedSupply']) / 100000000,
-                               float(gql_updates['globalInfos'][0]['lockedHeartsTotal']) / 100000000,
-                               float(gql_updates['globalInfos'][0]['totalMintedHearts']) / 100000000,
-                               float(gql_updates['globalInfos'][0]['shareRate']) / 10,
-                               float(gql_updates['globalInfos'][0]['stakeSharesTotal']) / 1000000000000),
-                       database_cursor=database_cursor)
-    print('Global Variables processed')
-
-
-def load_swaps(database_cursor, gql_dict):
-    gql_swaps_v2 = gql_dict['UniswapV2']
-    gql_swaps_v3 = gql_dict['UniswapV3']
-    for swap in gql_swaps_v2['swaps']:
-        insert_into_pg(schema='hex',
-                       table='swaps',
-                       columns='id,'
-                               'transaction_hash,'
-                               'sender,'
-                               'recipient,'
-                               'hex_amount,'
-                               'usdc_amount,'
-                               'uniswap,'
-                               'log_index',
-                       values=(swap['transaction']['id'] + '_' + swap['logIndex'],
-                               swap['transaction']['id'],
-                               swap['sender'],
-                               swap['to'],
-                               float(swap['amount0In']) - float(swap['amount0Out']),
-                               float(swap['amount1In']) - float(swap['amount1Out']),
-                               'v2',
-                               int(swap['logIndex'])),
-                       database_cursor=database_cursor)
-
-    for swap in gql_swaps_v3['swaps']:
-        insert_into_pg(schema='hex',
-                       table='swaps',
-                       columns='id,'
-                               'transaction_hash,'
-                               'sender,'
-                               'recipient,'
-                               'hex_amount,'
-                               'usdc_amount,'
-                               'uniswap,'
-                               'log_index',
-                       values=(swap['transaction']['id'] + '_' + swap['logIndex'],
-                               swap['transaction']['id'],
-                               swap['sender'],
-                               swap['recipient'],
-                               float(swap['amount0']),
-                               float(swap['amount1']),
-                               'v3',
-                               int(swap['logIndex'])),
-                       database_cursor=database_cursor)
-    print('Swaps processed')
