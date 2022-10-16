@@ -2,9 +2,9 @@ import sys
 from eth_utils import to_hex
 
 import json
-from src.configs.config import get_infura_conn
+from configs.web3 import get_local_node_conn
 
-web3 = get_infura_conn()
+web3 = get_local_node_conn()
 
 
 def decode_tuple(t, target_field):

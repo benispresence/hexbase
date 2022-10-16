@@ -1,4 +1,4 @@
-from src.configs.config import get_pg_conn
+from configs.postgres import get_pg_conn
 
 # SCHEMAS
 create_hex = f'CREATE SCHEMA IF NOT EXISTS hex;'
@@ -112,32 +112,36 @@ create_swaps = f'CREATE TABLE IF NOT EXISTS hex.swaps(' \
 create_sync_blocks = 'CREATE TABLE IF NOT EXISTS sync.blocks(block_num INT PRIMARY KEY, synced BOOLEAN);'
 
 
+check_sync = "SELECT schema_name FROM information_schema.schemata WHERE schema_name = 'sync';"
+
+
 def create_schemas_and_tables():
-    # todo only execute if sync schema is not existing, because that will ive indication
-    #  if the Blockchain Data Warehouse is loaded for the first time
     pg_conn = get_pg_conn()
     with pg_conn:
         with pg_conn.cursor() as cursor:
-            # SYNC SCHEMA TABLES
-            cursor.execute(create_sync)
-            cursor.execute(create_sync_blocks)
-            print('Created sync schema')
-            print('Created sync.blocks table')
-            # DL ETHEREUM SCHEMA TABLES
-            cursor.execute(create_hex)
-            cursor.execute(create_hex_transactions)
-            cursor.execute(create_hex_transfers)
-            cursor.execute(create_hex_stakes)
-            cursor.execute(create_daily_data_updates)
-            cursor.execute(create_global_variables)
-            cursor.execute(create_swaps)
-            print('Created hex schema')
-            print('Created hex.transactions table')
-            print('Created hex.transfers table')
-            print('Created hex.stakes table')
-            print('Created hex.daily_data_updates table')
-            print('Created hex.global_variables table')
-            print('Created hex.swaps table')
+            cursor.execute(check_sync)
+            result = cursor.fetchall()  # Check for sync table existing
+            if len(result) == 0:
+                # CREATE SYNC SCHEMA TABLES
+                cursor.execute(create_sync)
+                cursor.execute(create_sync_blocks)
+                print('Created sync schema')
+                print('Created sync.blocks table')
+                # CREATE DL ETHEREUM SCHEMA TABLES
+                cursor.execute(create_hex)
+                cursor.execute(create_hex_transactions)
+                cursor.execute(create_hex_transfers)
+                cursor.execute(create_hex_stakes)
+                cursor.execute(create_daily_data_updates)
+                cursor.execute(create_global_variables)
+                cursor.execute(create_swaps)
+                print('Created hex schema')
+                print('Created hex.transactions table')
+                print('Created hex.transfers table')
+                print('Created hex.stakes table')
+                print('Created hex.daily_data_updates table')
+                print('Created hex.global_variables table')
+                print('Created hex.swaps table')
 
 
 if __name__ == '__main__':

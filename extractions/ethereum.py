@@ -1,8 +1,9 @@
-from src.configs.config import get_infura_conn, get_pg_conn
-from src.classes import Block, Transaction, TransactionReceipt, Log, Event
-from src.utils.infura_counter import counter_up
+from configs.web3 import get_local_node_conn
+from configs.postgres import get_pg_conn
+from classes import Block, Transaction, TransactionReceipt, Log, Event
+from utils.count import counter_up
 
-web3 = get_infura_conn()
+web3 = get_local_node_conn()
 pg_conn = get_pg_conn()
 
 
