@@ -9,7 +9,6 @@ from configs.contract import hex_contract_dict
 from database import create_schemas_and_tables
 from loads import begin_db_transaction, load_transactions, load_transfers, load_stakes, load_swaps,\
     load_global_variables, load_daily_data_updates, sync, commit_db_transaction
-from utils.count import counter_up
 
 web3 = get_local_node_conn()
 pg_conn = get_pg_conn()
@@ -23,7 +22,6 @@ def main():
                                  abi=hex_contract_dict['abi'],
                                  deployed_block_height=hex_contract_dict['deployed_block_height'],
                                  web3_infura_connection=web3)
-    counter_up()
 
     # PREREQUISITES
     print('\nPreparing database...')
