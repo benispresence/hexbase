@@ -1,4 +1,4 @@
-from utils.decode_contract import decode_contract_input
+from utils.decode import decode_contract_input
 
 
 class SmartContract:
