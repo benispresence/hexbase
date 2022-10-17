@@ -1,3 +1,5 @@
+from line_profiler_pycharm import profile
+
 from configs.web3 import get_local_node_conn
 from configs.postgres import get_pg_conn
 from classes import Block, Transaction, TransactionReceipt, Log, Event
@@ -110,22 +112,17 @@ def extract_events(logs_dict, contract):
     return event_type_dict
 
 
-def extract_ethereum_data(contract):
-    # LAST BLOCK PROCESSED
-    with pg_conn:
-        with pg_conn.cursor() as db_cursor:
-            last_block_processed = query_last_block(database_cursor=db_cursor,
-                                                    block_height=contract.deployed_block_height)
-    next_block_number = last_block_processed + 1
+@profile
+def extract_ethereum_data(contract, block_number):
     # BLOCK
-    eth_block = Block(web3.eth.get_block(next_block_number, full_transactions=True))
+    eth_block = Block(web3.eth.get_block(block_number, full_transactions=True))
 
     # DIRECT TRANSACTIONS
     transactions_list = [Transaction(transaction) for transaction in eth_block.transactions
                          if Transaction(transaction).to_address == contract.address]
 
     # EXTRACT LOGS
-    logs_dict = extract_logs(contract=contract, block_number=next_block_number)
+    logs_dict = extract_logs(contract=contract, block_number=block_number)
 
     # EXTRACT TXN RECEIPTS (for events)
     txn_receipts_dict_for_events = extract_indirect_txn_receipts(logs_dict)

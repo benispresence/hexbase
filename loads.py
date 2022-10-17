@@ -157,7 +157,6 @@ def load_transactions(database_cursor, block_instance, txn_dict, txn_receipts_di
                                    str(arguments).replace("'", '"'),
                                    bool(receipt.status)),
                            database_cursor=database_cursor)
-    print('Transactions processed')
 
 
 def sync(database_cursor, block_instance):
@@ -189,7 +188,6 @@ def load_transfers(database_cursor, event_dict):
                                transfers_dict[transfer_id].transaction_hash.hex(),
                                int(transfers_dict[transfer_id].log_index)),
                        database_cursor=database_cursor)
-    print('Transfers processed')
 
 
 def load_stakes(database_cursor, event_dict):
@@ -304,7 +302,6 @@ def load_stakes(database_cursor, event_dict):
                                timestamp_at=datetime.utcfromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S.%f"),
                                txn_hash=good_accounting_txn[dict_id].transaction_hash.hex(),
                                database_cursor=database_cursor)
-    print('Stakes processed')
 
 
 def load_daily_data_updates(database_cursor, event_dict):
@@ -319,12 +316,8 @@ def load_daily_data_updates(database_cursor, event_dict):
                        table='daily_data_updates',
                        columns='day,'
                                'next_day,'
-                               'transaction_hash,'
-                               'payout_per_t_share,'
-                               'payout,'
-                               'shares',
+                               'transaction_hash',
                        values=(begin_day,
                                end_day,
                                event_updates[dict_id].transaction_hash.hex()),
                        database_cursor=database_cursor)
-    print('Daily Data Updates processed')
