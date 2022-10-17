@@ -1,7 +1,8 @@
+from line_profiler_pycharm import profile
+
 from configs.web3 import get_local_node_conn
 from configs.postgres import get_pg_conn
 from classes import Block, Transaction, TransactionReceipt, Log, Event
-from utils.count import counter_up
 
 web3 = get_local_node_conn()
 pg_conn = get_pg_conn()
@@ -26,15 +27,10 @@ def extract_logs(contract, block_number):
     share_rate_change_filter = contract.share_rate_change['event_class'].createFilter(fromBlock=block_number, toBlock=block_number)
 
     transfer_logs = transfer_filter.get_all_entries()
-    counter_up()
     daily_data_update_logs = daily_data_update_filter.get_all_entries()
-    counter_up()
     stake_start_logs = stake_start_filter.get_all_entries()
-    counter_up()
     stake_good_accounting_logs = stake_good_accounting_filter.get_all_entries()
-    counter_up()
     stake_end_logs = stake_end_filter.get_all_entries()
-    counter_up()
     share_rate_change_logs = share_rate_change_filter.get_all_entries()
     all_logs_dicts = {'Transfer': transfer_logs,
                       'DailyDataUpdate': daily_data_update_logs,
@@ -54,7 +50,6 @@ def extract_indirect_txn_receipts(logs_dicts_dict):
             receipt_id = log_dict['transactionHash'].hex()+'_'+str(log_dict['logIndex'])
             if receipt_id not in txn_receipts_dict.keys():
                 receipt = TransactionReceipt(web3.eth.get_transaction_receipt(log_dict['transactionHash']))
-                counter_up()
                 txn_receipts_dict[receipt_id] = receipt
         txn_receipt_events_dict[event_key] = txn_receipts_dict
     return txn_receipt_events_dict
@@ -71,7 +66,6 @@ def append_txn_receipts(txn_list, txn_receipt_dict):
     for txn in txn_list:
         if txn.txn_hash not in txn_receipts.keys():
             receipt = TransactionReceipt(web3.eth.get_transaction_receipt(txn.txn_hash))
-            counter_up()
             txn_receipts[receipt.transaction_hash] = receipt
 
     return txn_receipts
@@ -85,7 +79,6 @@ def append_transactions(transactions_list, txn_receipt_dict):
     for txn_hash in txn_receipt_dict:
         if txn_hash not in transaction_dict.keys():
             txn = Transaction(web3.eth.get_transaction(txn_hash))
-            counter_up()
             transaction_dict[txn.txn_hash] = txn
     return transaction_dict
 
@@ -119,23 +112,17 @@ def extract_events(logs_dict, contract):
     return event_type_dict
 
 
-def extract_ethereum_data(contract):
-    # LAST BLOCK PROCESSED
-    with pg_conn:
-        with pg_conn.cursor() as db_cursor:
-            last_block_processed = query_last_block(database_cursor=db_cursor,
-                                                    block_height=contract.deployed_block_height)
-    next_block_number = last_block_processed + 1
+@profile
+def extract_ethereum_data(contract, block_number):
     # BLOCK
-    eth_block = Block(web3.eth.get_block(next_block_number, full_transactions=True))
-    counter_up()
+    eth_block = Block(web3.eth.get_block(block_number, full_transactions=True))
 
     # DIRECT TRANSACTIONS
     transactions_list = [Transaction(transaction) for transaction in eth_block.transactions
                          if Transaction(transaction).to_address == contract.address]
 
     # EXTRACT LOGS
-    logs_dict = extract_logs(contract=contract, block_number=next_block_number)
+    logs_dict = extract_logs(contract=contract, block_number=block_number)
 
     # EXTRACT TXN RECEIPTS (for events)
     txn_receipts_dict_for_events = extract_indirect_txn_receipts(logs_dict)

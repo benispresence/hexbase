@@ -74,43 +74,12 @@ create_daily_data_updates = f'CREATE TABLE IF NOT EXISTS hex.daily_data_updates(
                             f'day                           INT PRIMARY KEY,' \
                             f'next_day                      INT,' \
                             f'transaction_hash              CHAR(66),' \
-                            f'payout_per_t_share            NUMERIC,' \
-                            f'payout                        NUMERIC(30,8),' \
-                            f'shares                        NUMERIC(34,12),' \
                             f'CONSTRAINT fk_transaction ' \
                             f'FOREIGN KEY(transaction_hash) ' \
                             f'REFERENCES hex.transactions(transaction_hash)' \
                             f');'
-
-
-create_global_variables = f'CREATE TABLE IF NOT EXISTS hex.global_variables(' \
-                            f'block_number                  INT PRIMARY KEY,' \
-                            f'total_supply                  NUMERIC(30,8),' \
-                            f'circulating_supply            NUMERIC(30,8),' \
-                            f'allocated_supply              NUMERIC(30,8),' \
-                            f'locked_supply                 NUMERIC(30,8),' \
-                            f'total_minted                  NUMERIC(30,8),' \
-                            f't_share_rate                  NUMERIC(10,1),' \
-                            f'total_t_shares_staked         NUMERIC(24,12)' \
-                            f');'
-
-create_swaps = f'CREATE TABLE IF NOT EXISTS hex.swaps(' \
-                            f'id                            CHAR(76) PRIMARY KEY,' \
-                            f'transaction_hash              CHAR(66),' \
-                            f'sender                        CHAR(42),' \
-                            f'recipient                     CHAR(42),' \
-                            f'hex_amount                    NUMERIC(24,8),' \
-                            f'usdc_amount                   NUMERIC(22,6),' \
-                            f'uniswap                       CHAR(2),' \
-                            f'log_index                     INT,' \
-                            f'CONSTRAINT fk_transaction ' \
-                            f'FOREIGN KEY(transaction_hash) ' \
-                            f'REFERENCES hex.transactions(transaction_hash)' \
-                            f');'
-
 
 create_sync_blocks = 'CREATE TABLE IF NOT EXISTS sync.blocks(block_num INT PRIMARY KEY, synced BOOLEAN);'
-
 
 check_sync = "SELECT schema_name FROM information_schema.schemata WHERE schema_name = 'sync';"
 
@@ -133,15 +102,11 @@ def create_schemas_and_tables():
                 cursor.execute(create_hex_transfers)
                 cursor.execute(create_hex_stakes)
                 cursor.execute(create_daily_data_updates)
-                cursor.execute(create_global_variables)
-                cursor.execute(create_swaps)
                 print('Created hex schema')
                 print('Created hex.transactions table')
                 print('Created hex.transfers table')
                 print('Created hex.stakes table')
                 print('Created hex.daily_data_updates table')
-                print('Created hex.global_variables table')
-                print('Created hex.swaps table')
 
 
 if __name__ == '__main__':
