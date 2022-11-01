@@ -74,6 +74,9 @@ create_daily_data_updates = f'CREATE TABLE IF NOT EXISTS hex.daily_data_updates(
                             f'day                           INT PRIMARY KEY,' \
                             f'next_day                      INT,' \
                             f'transaction_hash              CHAR(66),' \
+                            f'payout_per_t_share            NUMERIC,' \
+                            f'payout                        NUMERIC(30,8),' \
+                            f'shares                        NUMERIC(34,12),' \
                             f'CONSTRAINT fk_transaction ' \
                             f'FOREIGN KEY(transaction_hash) ' \
                             f'REFERENCES hex.transactions(transaction_hash)' \
@@ -85,6 +88,9 @@ check_sync = "SELECT schema_name FROM information_schema.schemata WHERE schema_n
 
 
 def create_schemas_and_tables():
+    """
+    :return: Creates the necessary schemas and tables for the hex smart contract data within the hexbase database.
+    """
     pg_conn = get_pg_conn()
     with pg_conn:
         with pg_conn.cursor() as cursor:

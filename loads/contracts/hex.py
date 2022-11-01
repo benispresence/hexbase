@@ -1,22 +1,6 @@
 from datetime import datetime, timedelta
 
-
-def begin_db_transaction(database_cursor):
-    begin = f'BEGIN;'
-    database_cursor.execute(begin)
-
-
-def commit_db_transaction(database_cursor):
-    commit = f'COMMIT;'
-    database_cursor.execute(commit)
-
-
-def insert_into_pg(schema, table, columns, values, database_cursor):
-    # SQL
-    insert_txn_statement = f'insert into {schema}.{table} ({columns}) values {tuple(values)};'
-
-    # INSERT TO POSTGRES
-    database_cursor.execute(insert_txn_statement)
+from loads.database import insert_into_pg
 
 
 def upsert_stakes_into_pg(schema, table, columns, values, database_cursor, primary_key_column,
@@ -61,111 +45,6 @@ def update_good_accounting(schema, table, stake_id, payout, penalty, timestamp_a
 
     # INSERT TO POSTGRES
     database_cursor.execute(update_txn_statement)
-
-
-def load_transactions(database_cursor, block_instance, txn_dict, txn_receipts_dict, contract):
-    for txn_hash in txn_dict:
-        transaction = txn_dict[txn_hash]
-        receipt = txn_receipts_dict[txn_hash]
-        function_called, arguments = \
-            transaction.get_function_arguments(abi=contract.abi,
-                                               address=contract.address,
-                                               web3_contract=contract.web3_contract_interface)
-        if function_called == 'Null':
-            insert_into_pg(schema='hex',
-                           table='transactions',
-                           columns='transaction_hash,'
-                                   'block_number,'
-                                   'created_at,'
-                                   'block_gas_limit,'
-                                   'block_gas_used,'
-                                   'from_address,'
-                                   'to_address,'
-                                   'transaction_fee,'
-                                   'gas,'
-                                   'gas_price,'
-                                   'cumulative_gas_used,'
-                                   'effective_gas_price,'
-                                   'gas_used, '
-                                   'nonce,'
-                                   'transaction_index,'
-                                   'transaction_type,'
-                                   'eth_amount,'
-                                   'has_succeeded',
-                           values=(transaction.txn_hash.hex(),
-                                   int(block_instance.number),
-                                   datetime.utcfromtimestamp(int(block_instance.timestamp))
-                                   .strftime("%Y-%m-%d %H:%M:%S.%f"),
-                                   int(block_instance.gas_limit),
-                                   int(block_instance.gas_used),
-                                   transaction.from_address,
-                                   transaction.to_address,
-                                   float(receipt.effective_gas_price)/1000000000000000000*int(receipt.gas_used),
-                                   int(transaction.gas),
-                                   float(transaction.gas_price)/1000000000000000000,
-                                   int(receipt.cumulative_gas_used),
-                                   float(receipt.effective_gas_price)/1000000000000000000,
-                                   int(receipt.gas_used),
-                                   int(transaction.nonce),
-                                   int(transaction.transaction_index),
-                                   transaction.type,
-                                   float(transaction.value)/1000000000000000000,
-                                   bool(receipt.status)),
-                           database_cursor=database_cursor)
-        else:
-            insert_into_pg(schema='hex',
-                           table='transactions',
-                           columns='transaction_hash,'
-                                   'block_number,'
-                                   'created_at,'
-                                   'block_gas_limit,'
-                                   'block_gas_used, '
-                                   'from_address,'
-                                   'to_address,'
-                                   'transaction_fee,'
-                                   'gas,'
-                                   'gas_price,'
-                                   'cumulative_gas_used,'
-                                   'effective_gas_price,'
-                                   'gas_used,'
-                                   'nonce,'
-                                   'transaction_index,'
-                                   'transaction_type,'
-                                   'eth_amount,'
-                                   'function_called,'
-                                   'arguments,'
-                                   'has_succeeded',
-                           values=(transaction.txn_hash.hex(),
-                                   int(block_instance.number),
-                                   datetime.utcfromtimestamp(int(block_instance.timestamp))
-                                   .strftime("%Y-%m-%d %H:%M:%S.%f"),
-                                   int(block_instance.gas_limit),
-                                   int(block_instance.gas_used),
-                                   transaction.from_address,
-                                   transaction.to_address,
-                                   float(receipt.effective_gas_price) / 1000000000000000000 * int(receipt.gas_used),
-                                   int(transaction.gas),
-                                   float(transaction.gas_price)/1000000000000000000,
-                                   int(receipt.cumulative_gas_used),
-                                   float(receipt.effective_gas_price)/1000000000000000000,
-                                   int(receipt.gas_used),
-                                   int(transaction.nonce),
-                                   int(transaction.transaction_index),
-                                   transaction.type,
-                                   float(transaction.value)/1000000000000000000,
-                                   function_called,
-                                   str(arguments).replace("'", '"'),
-                                   bool(receipt.status)),
-                           database_cursor=database_cursor)
-
-
-def sync(database_cursor, block_instance):
-    insert_into_pg(schema='sync',
-                   table='blocks',
-                   columns='block_num, synced',
-                   values=(int(block_instance.number), True),
-                   database_cursor=database_cursor)
-    print(f'Block number {block_instance.number} was successfully processed.')
 
 
 def load_transfers(database_cursor, event_dict):
@@ -304,7 +183,7 @@ def load_stakes(database_cursor, event_dict):
                                database_cursor=database_cursor)
 
 
-def load_daily_data_updates(database_cursor, event_dict):
+def load_daily_data_updates(database_cursor, event_dict, contract):
     event_updates = event_dict['DailyDataUpdate']
     for dict_id in event_updates:
         # DATA0
@@ -312,12 +191,32 @@ def load_daily_data_updates(database_cursor, event_dict):
         bytes_data0 = int(data0).to_bytes(32, 'little')
         begin_day = int.from_bytes(bytes_data0[5:7], 'little')
         end_day = int.from_bytes(bytes_data0[7:9], 'little')
+        # payout, shares, unclaimedBitcoins
+        daily_data_list = contract.web3_contract_interface.functions.dailyData(begin_day).call()
+        try:
+            payout = float(daily_data_list[0])/100000000
+        except ZeroDivisionError:
+            payout = 0
+        try:
+            shares = float(daily_data_list[1])/1000000000000
+        except ZeroDivisionError:
+            shares = 0
+        try:
+            payout_per_t_share = payout/shares
+        except ZeroDivisionError:
+            payout_per_t_share = 0
         insert_into_pg(schema='hex',
                        table='daily_data_updates',
                        columns='day,'
                                'next_day,'
-                               'transaction_hash',
+                               'transaction_hash,'
+                               'payout_per_t_share,'
+                               'payout,'
+                               'shares',
                        values=(begin_day,
                                end_day,
-                               event_updates[dict_id].transaction_hash.hex()),
+                               event_updates[dict_id].transaction_hash.hex(),
+                               payout_per_t_share,
+                               payout,
+                               shares),
                        database_cursor=database_cursor)
