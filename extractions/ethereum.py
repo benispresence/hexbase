@@ -2,44 +2,22 @@ from line_profiler_pycharm import profile
 
 from configs.web3 import get_local_node_conn
 from configs.postgres import get_pg_conn
-from classes import Block, Transaction, TransactionReceipt, Log, Event
+from classes.ethereum import Block, Transaction, TransactionReceipt, Log, Event
+from extractions.logs.hex import extract_logs as extract_hex_logs
+from extractions.logs.uniswap_v2 import extract_logs as extract_univ2_logs
 
 web3 = get_local_node_conn()
 pg_conn = get_pg_conn()
 
 
-def query_last_block(database_cursor, block_height):
-    query = 'SELECT max(block_num) FROM sync.blocks;'
+def query_last_block(database_cursor, block_height, table):
+    query = f'SELECT max(block_num) FROM sync.{table};'
     database_cursor.execute(query)
     result = database_cursor.fetchall()
     if result[0][0] is None:
         return block_height - 1
     else:
         return result[0][0]
-
-
-def extract_logs(contract, block_number):
-    transfer_filter = contract.transfer['event_class'].createFilter(fromBlock=block_number, toBlock=block_number)
-    daily_data_update_filter = contract.daily_data_update['event_class'].createFilter(fromBlock=block_number, toBlock=block_number)
-    stake_start_filter = contract.stake_start['event_class'].createFilter(fromBlock=block_number, toBlock=block_number)
-    stake_good_accounting_filter = contract.stake_good_accounting['event_class'].createFilter(fromBlock=block_number, toBlock=block_number)
-    stake_end_filter = contract.stake_end['event_class'].createFilter(fromBlock=block_number, toBlock=block_number)
-    share_rate_change_filter = contract.share_rate_change['event_class'].createFilter(fromBlock=block_number, toBlock=block_number)
-
-    transfer_logs = transfer_filter.get_all_entries()
-    daily_data_update_logs = daily_data_update_filter.get_all_entries()
-    stake_start_logs = stake_start_filter.get_all_entries()
-    stake_good_accounting_logs = stake_good_accounting_filter.get_all_entries()
-    stake_end_logs = stake_end_filter.get_all_entries()
-    share_rate_change_logs = share_rate_change_filter.get_all_entries()
-    all_logs_dicts = {'Transfer': transfer_logs,
-                      'DailyDataUpdate': daily_data_update_logs,
-                      'StakeStart': stake_start_logs,
-                      'StakeGoodAccounting': stake_good_accounting_logs,
-                      'StakeEnd': stake_end_logs,
-                      'ShareRateChange': share_rate_change_logs}
-
-    return all_logs_dicts
 
 
 def extract_indirect_txn_receipts(logs_dicts_dict):
@@ -122,7 +100,12 @@ def extract_ethereum_data(contract, block_number):
                          if Transaction(transaction).to_address == contract.address]
 
     # EXTRACT LOGS
-    logs_dict = extract_logs(contract=contract, block_number=block_number)
+    if contract.name == 'hex':
+        logs_dict = extract_hex_logs(contract=contract, block_number=block_number)
+    elif contract.name == 'uniswap_v2':
+        logs_dict = extract_univ2_logs(contract=contract, block_number=block_number)
+    else:
+        logs_dict = {'default': dict()}
 
     # EXTRACT TXN RECEIPTS (for events)
     txn_receipts_dict_for_events = extract_indirect_txn_receipts(logs_dict)

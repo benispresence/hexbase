@@ -2,6 +2,9 @@ from utils.decode import decode_contract_input
 
 
 class SmartContract:
+    """
+    A Smart contract instance which is deployed on the ethereum blockchain.
+    """
     def __init__(self, name, address, abi, deployed_block_height, web3_infura_connection):
         self.name = name
         self.address = address
@@ -9,30 +12,11 @@ class SmartContract:
         self.deployed_block_height = deployed_block_height
         self.web3_contract_interface = web3_infura_connection.eth.contract(address=address, abi=abi)
 
-        # web3 events
-        self.transfer = dict(event_name='Transfer',
-                             event_class=self.web3_contract_interface.events.Transfer,
-                             event_object=self.web3_contract_interface.events.Transfer())
-        self.daily_data_update = dict(event_name='DailyDataUpdate',
-                                      event_class=self.web3_contract_interface.events.DailyDataUpdate,
-                                      event_object=self.web3_contract_interface.events.DailyDataUpdate())
-        self.stake_start = dict(event_name='StakeStart',
-                                event_class=self.web3_contract_interface.events.StakeStart,
-                                event_object=self.web3_contract_interface.events.StakeStart())
-        self.stake_good_accounting = dict(event_name='StakeGoodAccounting',
-                                          event_class=self.web3_contract_interface.events.StakeGoodAccounting,
-                                          event_object=self.web3_contract_interface.events.StakeGoodAccounting())
-        self.stake_end = dict(event_name='StakeEnd',
-                              event_class=self.web3_contract_interface.events.StakeEnd,
-                              event_object=self.web3_contract_interface.events.StakeEnd())
-        self.share_rate_change = dict(event_name='ShareRateChange',
-                                      event_class=self.web3_contract_interface.events.ShareRateChange,
-                                      event_object=self.web3_contract_interface.events.ShareRateChange())
-        self.events = [self.transfer, self.stake_end, self.stake_start, self.stake_good_accounting,
-                       self.share_rate_change, self.daily_data_update]
-
 
 class Block:
+    """
+    An ethereum block instance retrieved from web3.py
+    """
     def __init__(self, block_dict):
         self.number = block_dict['number']
         self.difficulty = block_dict['difficulty']
@@ -63,6 +47,9 @@ class Block:
 
 
 class Transaction:
+    """
+    An etherum transaction retrived from web3.py
+    """
     def __init__(self, txn_dict):
         self.txn_hash = txn_dict['hash']
         self.block_hash = txn_dict['blockHash']
@@ -88,6 +75,9 @@ class Transaction:
 
 
 class TransactionReceipt:
+    """
+        An etherum transaction receipt retrived from web3.py
+    """
     def __init__(self, receipt_dict):
         self.receipt_dict = receipt_dict
         self.block_hash = receipt_dict['blockHash']
@@ -107,6 +97,9 @@ class TransactionReceipt:
 
 
 class Log:
+    """
+        An etherum log entrie retrived from web3.py
+    """
     def __init__(self, log_dict):
         self.log_dict = log_dict
         self.address = log_dict['address']
@@ -121,6 +114,9 @@ class Log:
 
 
 class Event:
+    """
+    An etherum event retrieved from web3.py
+    """
     def __init__(self, event_dict):
         self.event_dict = event_dict
         self.args = event_dict['args']
