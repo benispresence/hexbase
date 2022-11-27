@@ -1,6 +1,4 @@
 #!/usr/local/bin/python3.10
-from line_profiler_pycharm import profile
-
 from extractions.ethereum import extract_ethereum_data, query_last_block
 from classes.hex import HexContract
 from configs.web3 import get_local_node_conn
@@ -16,7 +14,6 @@ web3 = get_local_node_conn()
 pg_conn = get_pg_conn()
 
 
-@profile
 def main():
     # CONFIGURATION
     print('\nConfiguration loading...')

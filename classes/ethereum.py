@@ -48,7 +48,7 @@ class Block:
 
 class Transaction:
     """
-    An etherum transaction retrived from web3.py
+    An ethereum transaction retrieved from web3.py
     """
     def __init__(self, txn_dict):
         self.txn_hash = txn_dict['hash']
@@ -76,7 +76,7 @@ class Transaction:
 
 class TransactionReceipt:
     """
-        An etherum transaction receipt retrived from web3.py
+        An ethereum transaction receipt retrieved from web3.py
     """
     def __init__(self, receipt_dict):
         self.receipt_dict = receipt_dict
@@ -98,7 +98,7 @@ class TransactionReceipt:
 
 class Log:
     """
-        An etherum log entrie retrived from web3.py
+        An ethereum log entry retrieved from web3.py
     """
     def __init__(self, log_dict):
         self.log_dict = log_dict
@@ -115,7 +115,7 @@ class Log:
 
 class Event:
     """
-    An etherum event retrieved from web3.py
+    An ethereum event retrieved from web3.py
     """
     def __init__(self, event_dict):
         self.event_dict = event_dict

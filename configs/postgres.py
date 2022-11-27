@@ -9,7 +9,7 @@ def get_pg_conn():
     """
     config = get_config()
     pg_conn = psycopg2.connect(
-        dbname=config['postgre_db']['dbname_hexbase_v4']
+        dbname=config['postgre_db']['dbname']
         , user=config['postgre_db']['user']
         , password=config['postgre_db']['password']
         , host=config['postgre_db']['host']

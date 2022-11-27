@@ -1,6 +1,6 @@
 import configparser
 
-PATH_CONFIG = '/Users/benjaminharmat/global_config.ini'
+PATH_CONFIG = '~/global_config.ini'
 
 
 def get_config():

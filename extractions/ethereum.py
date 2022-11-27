@@ -1,5 +1,3 @@
-from line_profiler_pycharm import profile
-
 from configs.web3 import get_local_node_conn
 from configs.postgres import get_pg_conn
 from classes.ethereum import Block, Transaction, TransactionReceipt, Log, Event
@@ -11,6 +9,13 @@ pg_conn = get_pg_conn()
 
 
 def query_last_block(database_cursor, block_height, table):
+    """
+    Queries last block number which has been already processed in the load process for the relevant smart contract
+    :param database_cursor: instance of pg database cursor
+    :param block_height: int - block height of the smart contract
+    :param table: str - table of the smart contract
+    :return: int - block number
+    """
     query = f'SELECT max(block_num) FROM sync.{table};'
     database_cursor.execute(query)
     result = database_cursor.fetchall()
@@ -21,10 +26,17 @@ def query_last_block(database_cursor, block_height, table):
 
 
 def extract_indirect_txn_receipts(logs_dicts_dict):
+    """
+    Extracts all the transaction receipts from transactions which are indirectly triggering the relevant smart contract
+    :param logs_dicts_dict: dictionary of "event"-dictionaries of logs
+    :return: a dictionary of "event"-dictionaries of receipts
+    """
     txn_receipt_events_dict = {}
     for event_key in logs_dicts_dict:
+        # for each Event Type
         txn_receipts_dict = {}
         for log_dict in logs_dicts_dict[event_key]:
+            # for each log
             receipt_id = log_dict['transactionHash'].hex()+'_'+str(log_dict['logIndex'])
             if receipt_id not in txn_receipts_dict.keys():
                 receipt = TransactionReceipt(web3.eth.get_transaction_receipt(log_dict['transactionHash']))
@@ -34,6 +46,14 @@ def extract_indirect_txn_receipts(logs_dicts_dict):
 
 
 def append_txn_receipts(txn_list, txn_receipt_dict):
+    """
+    Appends the "txn_receipt_dict" dictionary of "event"-dictionaries of receipts
+    with transaction receipts of the direct transactions. The purpose is to include all the transaction
+    receipts in one dictionary -> "txn_receipts"
+    :param txn_list: list - transactions
+    :param txn_receipt_dict: dictionary of "event"-dictionaries of receipts
+    :return: dict of all transaction receipts
+    """
     txn_receipts = dict()
 
     for event in txn_receipt_dict:
@@ -50,6 +70,13 @@ def append_txn_receipts(txn_list, txn_receipt_dict):
 
 
 def append_transactions(transactions_list, txn_receipt_dict):
+    """
+    Add indirect txn to the list of direct txn. Indirect txn are txn that emit an event
+    while not calling the relevant smart contract directly
+    :param transactions_list: list of direct transactions
+    :param txn_receipt_dict: dict of all transaction receipts
+    :return: dict of all transactions
+    """
     transaction_dict = dict()
     for txn in transactions_list:
         transaction_dict[txn.txn_hash] = txn
@@ -62,6 +89,12 @@ def append_transactions(transactions_list, txn_receipt_dict):
 
 
 def transform_logs(logs_dict, indirect_txn_receipts_dict):
+    """
+    Transforms the dict of all logs is structured to the appropriate format.
+    :param logs_dict: dict of logs
+    :param indirect_txn_receipts_dict: dict of indirect txn receipts
+    :return: dict of logs
+    """
     new_logs_dict = {}
     for event_key in logs_dict:
         new_logs_list = {}
@@ -78,6 +111,12 @@ def transform_logs(logs_dict, indirect_txn_receipts_dict):
 
 
 def extract_events(logs_dict, contract):
+    """
+    Extracts all the events from the logs and places them into a dict
+    :param logs_dict: dict of logs
+    :param contract: The relevant smart contract instance. (class SmartContract)
+    :return: dict of all events
+    """
     event_type_dict = dict()
     for event_key in logs_dict:
         events_dict = {}
@@ -90,8 +129,14 @@ def extract_events(logs_dict, contract):
     return event_type_dict
 
 
-@profile
 def extract_ethereum_data(contract, block_number):
+    """
+    Extracts block, transaction, log and txn receipt data.
+    Afterwards it transforms the data into appropriate dictionaries and returns them
+    :param contract: The relevant smart contract instance. (class SmartContract)
+    :param block_number: int of block number
+    :return: Block(), dict of txn, dict of events, dict of logs, dict of txn receipts
+    """
     # BLOCK
     eth_block = Block(web3.eth.get_block(block_number, full_transactions=True))
 
@@ -107,13 +152,13 @@ def extract_ethereum_data(contract, block_number):
     else:
         logs_dict = {'default': dict()}
 
-    # EXTRACT TXN RECEIPTS (for events)
+    # EXTRACT INDIRECT TXN RECEIPTS (for events)
     txn_receipts_dict_for_events = extract_indirect_txn_receipts(logs_dict)
 
-    # APPEND TXN RECEIPTS
+    # APPEND DIRECT TXN RECEIPTS
     txn_receipts_dict = append_txn_receipts(transactions_list, txn_receipts_dict_for_events)
 
-    # APPEND TXN
+    # APPEND INDIRECT TXN
     transactions_dict = append_transactions(transactions_list, txn_receipts_dict)
 
     # TRANSFORM LOGS

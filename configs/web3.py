@@ -8,7 +8,7 @@ def get_infura_conn():
     :return: A connection to web3 via the infura api service.
     """
     config = get_config()
-    infura_url = "https://mainnet.infura.io/v3/"+config['infura2']['token']
+    infura_url = "https://mainnet.infura.io/v3/"+config['infura']['token']
     web3_conn = Web3(Web3.HTTPProvider(infura_url))
     return web3_conn
 
