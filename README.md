@@ -8,7 +8,7 @@ Data Source is a full node of the ethereum blockchain.
 
 ## Entity Relationship Diagram
 
-![](images/Hexbase ERD.jpeg "Hexbase ERD")
+![](images/hexbase_erd.jpeg "Hexbase ERD")
 
 ## Requirements
 - run ethereum consensus & execution client locally
