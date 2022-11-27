@@ -41,5 +41,3 @@ ETH Address:0x6E1e724b1e0227819e63E2bCB1a0E844dB60A9c3
 
 ## Features planned
 - Support Hedron, Icosa, HSI, Maximus, Perpetual contracts
-
-## License
