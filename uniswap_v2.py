@@ -16,7 +16,6 @@ web3 = get_local_node_conn()
 pg_conn = get_pg_conn()
 
 
-@profile
 def etl_uniswap_v2():
     # CONFIGURATION
     print('\nConfiguration loading...')
